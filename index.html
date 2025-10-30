@@ -133,6 +133,7 @@
       if (localStorage.getItem("hasVoted") === "true") {
          document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
          document.getElementById("poll-status").textContent = "✅ You’ve already voted. Thank you!";
+        
        }
 
     // Handle voting
@@ -146,7 +147,11 @@
         document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
         document.getElementById("poll-status").textContent = "✅ Vote recorded! Thank you for voting.";
         // Save that this user has voted
-        localStorage.setItem("hasVoted", "true");
+localStorage.setItem("hasVoted", "true");
+
+      // Hide buttons after voting
+       document.querySelectorAll(".vote-btn").forEach(btn => btn.style.display = "none");
+
 
       });
     });
