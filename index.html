@@ -129,6 +129,12 @@
       }
     });
 
+       // Check if user already voted
+      if (localStorage.getItem("hasVoted") === "true") {
+         document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
+         document.getElementById("poll-status").textContent = "✅ You’ve already voted. Thank you!";
+       }
+
     // Handle voting
     document.querySelectorAll(".vote-btn").forEach(button => {
       button.addEventListener("click", () => {
@@ -139,6 +145,9 @@
         // Disable after voting
         document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
         document.getElementById("poll-status").textContent = "✅ Vote recorded! Thank you for voting.";
+        // Save that this user has voted
+        localStorage.setItem("hasVoted", "true");
+
       });
     });
   </script>
