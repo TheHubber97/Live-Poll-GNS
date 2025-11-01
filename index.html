@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,12 +71,6 @@
       font-size: 0.9em;
       color: #666;
     }
-
-    #loading {
-      font-size: 1.2em;
-      margin-top: 20px;
-      color: #555;
-    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -82,50 +78,52 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
+    // 🧠 Your Firebase Config (replace these values with your own)
     const firebaseConfig = {
-      apiKey: "AIzaSyBhnauTjb28fq4BJM7sHd-yCX7Fpqej_RQ",
-      authDomain: "live-poll-gns.firebaseapp.com",
-      databaseURL: "https://live-poll-gns-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "live-poll-gns",
-      storageBucket: "live-poll-gns.firebasestorage.app",
-      messagingSenderId: "217106845763",
-      appId: "1:217106845763:web:ba85010fe1a630aae344f6",
-      measurementId: "G-8TC1WSCRB6"
-    };
+  apiKey: "AIzaSyBhnauTjb28fq4BJM7sHd-yCX7Fpqej_RQ",
+  authDomain: "live-poll-gns.firebaseapp.com",
+  databaseURL: "https://live-poll-gns-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "live-poll-gns",
+  storageBucket: "live-poll-gns.firebasestorage.app",
+  messagingSenderId: "217106845763",
+  appId: "1:217106845763:web:ba85010fe1a630aae344f6",
+  measurementId: "G-8TC1WSCRB6"
+};
+
     firebase.initializeApp(firebaseConfig);
   </script>
 </head>
 
 <body>
-  <h1>Inter-House Poll</h1>
+  
+
+  <h1> Inter-House Poll </h1>
   <h2>Which House Display did you like the best?</h2>
 
-  <p id="poll-status">Checking your location...</p>
-  <p id="loading">(Please allow location access when prompted)</p>
+  <p id="poll-status">Choose your favourite house below:</p>
 
-  <div id="poll-content" style="display:none;">
-    <button class="vote-btn green" data-option="optionA">Green House (Mithila)</button>
-    <button class="vote-btn blue" data-option="optionB">Blue House (Nalanda)</button>
-    <button class="vote-btn red" data-option="optionC">Red House (Takshila)</button>
-    <button class="vote-btn yellow" data-option="optionD">Yellow House (Vikramshila)</button>
+  <!-- Vote Buttons -->
+  <button class="vote-btn green" data-option="optionA">Green House (Mithila)</button>
+  <button class="vote-btn blue" data-option="optionB">Blue House (Nalanda)</button>
+  <button class="vote-btn red" data-option="optionC">Red House (Takshila)</button>
+  <button class="vote-btn yellow" data-option="optionD">Yellow House (Vikramshila)</button>
 
-    <h3 style="margin-top:30px;">📊 Live Results</h3>
-    <ul>
-      <li>Green House (Mithila): <span id="countA">0</span></li>
-      <li>Blue House (Nalanda): <span id="countB">0</span></li>
-      <li>Red House (Takshila): <span id="countC">0</span></li>
-      <li>Yellow House (Vikramshila): <span id="countD">0</span></li>
-    </ul>
-  </div>
+  <h3 style="margin-top:30px;">📊 Live Results</h3>
+  <ul>
+    <li>Green House (Mithila): <span id="countA">0</span></li>
+    <li>Blue House (Nalanda): <span id="countB">0</span></li>
+    <li>Red House (Takshila): <span id="countC">0</span></li>
+    <li>Yellow House (Vikramshila): <span id="countD">0</span></li>
+  </ul>
 
   <div class="footer">
-    <p>Made by the students of GNS</p>
+    <p>Made t=by the students of GNS</p>
   </div>
 
   <script>
     const db = firebase.database();
 
-    // Live results
+    // Live results update
     db.ref("poll").on("value", snapshot => {
       const data = snapshot.val();
       if (data) {
@@ -136,71 +134,34 @@
       }
     });
 
-    // Stadium coordinates (GNS Ground or similar)
-    const allowedLat = 12.9706;  // Example: update to actual location
-    const allowedLng = 77.5608;
-    const allowedRadius = 0.25; // km range
+       // Check if user already voted
+      if (localStorage.getItem("hasVoted") === "true") {
+         document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
+         document.getElementById("poll-status").textContent = "✅ You’ve already voted. Thank you!";
+        
+       }
 
-    function getDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
-    function enablePoll(inside) {
-      document.getElementById("loading").style.display = "none";
-      document.getElementById("poll-content").style.display = "block";
-      if (inside) {
-        document.getElementById("poll-status").textContent = "✅ You are at the event! You can vote now.";
-      } else {
-        document.getElementById("poll-status").textContent = "⚠️ You are outside the event location. Voting is disabled.";
-        document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
-      }
-    }
-
-    // Location check
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude, longitude } = pos.coords;
-        const dist = getDistance(latitude, longitude, allowedLat, allowedLng);
-        enablePoll(dist <= allowedRadius);
-      }, err => {
-        document.getElementById("poll-status").textContent = "⚠️ Location access denied. Poll display enabled for viewing only.";
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("poll-content").style.display = "block";
-        document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
-      });
-    } else {
-      document.getElementById("poll-status").textContent = "❌ Geolocation not supported by this browser.";
-      document.getElementById("loading").style.display = "none";
-    }
-
-    // Voting
+    // Handle voting
     document.querySelectorAll(".vote-btn").forEach(button => {
       button.addEventListener("click", () => {
-        if (localStorage.getItem("hasVoted") === "true") return;
-
         const option = button.getAttribute("data-option");
-        db.ref("poll/" + option).transaction(current => (current || 0) + 1);
+        const optionRef = db.ref("poll/" + option);
+        optionRef.transaction(current => (current || 0) + 1);
 
-        document.querySelectorAll(".vote-btn").forEach(btn => {
-          btn.disabled = true;
-          btn.style.display = "none";
-        });
+        // Disable and hide buttons after voting
+document.querySelectorAll(".vote-btn").forEach(btn => {
+  btn.disabled = true;
+  btn.style.display = "none";
+});
 
-        localStorage.setItem("hasVoted", "true");
-        document.getElementById("poll-status").textContent = "✅ Vote recorded! Thank you for voting.";
+// Save that this user has voted
+localStorage.setItem("hasVoted", "true");
+
+// Show confirmation
+document.getElementById("poll-status").textContent = "✅ Vote recorded! Thank you for voting.";
+
       });
     });
-
-    if (localStorage.getItem("hasVoted") === "true") {
-      document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
-      document.getElementById("poll-status").textContent = "✅ You’ve already voted. Thank you!";
-    }
   </script>
 </body>
 </html>
