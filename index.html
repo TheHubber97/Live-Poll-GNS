@@ -87,13 +87,13 @@
   <script>
     const db = firebase.database();
 
-    // 🏟️ Avalahalli Stadium coordinates (Gopalan Sports Center)
-    const allowedLat = 12.985932;
-    const allowedLng = 77.710128;
-    const allowedRadius = 3; // 3 km buffer zone
+    // 🏟️ Avalahalli Stadium (Gopalan Sports Center) - Exact Coordinates
+    const allowedLat = 12.9860626;
+    const allowedLng = 77.7101381;
+    const allowedRadius = 1; // 1 km buffer zone
 
     function haversine(lat1, lon1, lat2, lon2) {
-      const R = 6371;
+      const R = 6371; // Earth radius in km
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a =
@@ -102,7 +102,7 @@
         Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLon / 2) ** 2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c; // distance in km
+      return R * c;
     }
 
     // 🔴 Live updates
@@ -116,7 +116,7 @@
       }
     });
 
-    // 🟡 Disable voting if user already voted
+    // 🟡 Disable voting if already voted
     if (localStorage.getItem("hasVoted") === "true") {
       document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
       document.getElementById("poll-status").textContent = "✅ You’ve already voted. Thank you!";
@@ -145,7 +145,7 @@
               document.getElementById("poll-status").textContent = "✅ Vote recorded! Thank you for voting.";
             } else {
               document.getElementById("poll-status").textContent =
-                "❌ Voting is only allowed near Avalahalli Stadium (Gopalan Sports Center).";
+                "❌ Voting is only allowed within 1 km of Avalahalli Stadium (Gopalan Sports Center).";
             }
           },
           () => {
