@@ -35,21 +35,6 @@
     .red { background-color: #F44336; }
     .yellow { background-color: #FFB300; color: #222; }
 
-    .reset-btn {
-      margin-top: 30px;
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      border-radius: 8px;
-      background-color: #555;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    .reset-btn:hover {
-      background-color: #333;
-    }
-
     ul { list-style-type: none; padding: 0; margin-top: 35px; }
     li { font-size: 1.15em; margin: 8px 0; }
     .footer { margin-top: 40px; font-size: 0.9em; color: #666; }
@@ -95,9 +80,6 @@
     <li>Yellow House (Vikramshila): <span id="countD">0</span></li>
   </ul>
 
-  <!-- Reset button -->
-  <button id="resetVotes" class="reset-btn">🔄 Allow Everyone to Vote Again</button>
-
   <div class="footer">
     <p>Made by the students of GNS</p>
   </div>
@@ -108,7 +90,7 @@
     // 🏟️ Avalahalli Stadium coordinates (Gopalan Sports Center)
     const allowedLat = 12.985932;
     const allowedLng = 77.710128;
-    const allowedRadius = 0.1; // in km (100 meters)
+    const allowedRadius = 3; // 3 km buffer zone
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -123,7 +105,7 @@
       return R * c; // distance in km
     }
 
-    // Live updates
+    // 🔴 Live updates
     db.ref("poll").on("value", snapshot => {
       const data = snapshot.val();
       if (data) {
@@ -134,13 +116,13 @@
       }
     });
 
-    // If user already voted
+    // 🟡 Disable voting if user already voted
     if (localStorage.getItem("hasVoted") === "true") {
       document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
       document.getElementById("poll-status").textContent = "✅ You’ve already voted. Thank you!";
     }
 
-    // Voting logic with location verification
+    // 🟢 Voting logic with location verification
     document.querySelectorAll(".vote-btn").forEach(button => {
       button.addEventListener("click", () => {
         navigator.geolocation.getCurrentPosition(
@@ -163,7 +145,7 @@
               document.getElementById("poll-status").textContent = "✅ Vote recorded! Thank you for voting.";
             } else {
               document.getElementById("poll-status").textContent =
-                "❌ Voting is only allowed inside Avalahalli Stadium (Gopalan). You seem too far from the venue.";
+                "❌ Voting is only allowed near Avalahalli Stadium (Gopalan Sports Center).";
             }
           },
           () => {
@@ -172,16 +154,6 @@
           }
         );
       });
-    });
-
-    // Reset only local vote state (everyone can vote again)
-    document.getElementById("resetVotes").addEventListener("click", () => {
-      localStorage.removeItem("hasVoted");
-      document.querySelectorAll(".vote-btn").forEach(btn => {
-        btn.disabled = false;
-        btn.style.display = "inline-block";
-      });
-      document.getElementById("poll-status").textContent = "✅ Voting reset! You can now vote again.";
     });
   </script>
 </body>
